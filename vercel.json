@@ -3,11 +3,6 @@
   "outputDirectory": "dist",
   "installCommand": "npm install",
   "framework": "astro",
-  "functions": {
-    "src/pages/api/**/*.ts": {
-      "runtime": "nodejs18.x"
-    }
-  },
   "env": {
     "ASTRO_TELEMETRY_DISABLED": "1",
     "NODE_ENV": "production"
