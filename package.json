@@ -10,13 +10,14 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/check": "^0.9.4",
-    "@astrojs/node": "^8.3.4",
+    "@astrojs/check": "^0.9.6",
+    "@astrojs/node": "^9.5.1",
     "@astrojs/prism": "^3.3.0",
     "@astrojs/rss": "^4.0.14",
-    "@astrojs/tailwind": "^5.1.2",
+    "@astrojs/tailwind": "^6.0.2",
+    "@astrojs/vercel": "^9.0.2",
     "@notionhq/client": "^2.2.15",
-    "astro": "^4.16.18",
+    "astro": "^5.16.5",
     "dotenv": "^17.2.3",
     "prismjs": "^1.30.0",
     "tailwindcss": "^3.4.17",

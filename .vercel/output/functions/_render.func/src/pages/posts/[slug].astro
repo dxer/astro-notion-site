@@ -1,0 +1,132 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Navigation from '../../components/Navigation.astro';
+import NotionBlock from '../../components/NotionBlock.astro';
+import TableOfContents from '../../components/TableOfContents.astro';
+import ReadingProgress from '../../components/ReadingProgress.astro';
+import BackToTop from '../../components/BackToTop.astro';
+import ShareButtons from '../../components/ShareButtons.astro';
+import Button from '../../components/ui/Button.astro';
+import { getPosts, getPostBySlug, formatDate } from '../../lib/notion';
+import { getCurrentLanguage, getTranslations } from '../../lib/i18n';
+import { extractHeadingsFromBlocks, calculateReadingTime } from '../../lib/markdown';
+
+const { slug } = Astro.params;
+
+let post = null;
+try {
+  post = await getPostBySlug(slug!);
+} catch (error) {
+  console.error('Failed to fetch post:', error);
+  // In development, show mock data
+  if (import.meta.env.DEV) {
+    const mockPosts: Record<string, any> = {
+      'react-18-features': {
+        id: '1',
+        title: 'React 18 新特性深度解析',
+        slug: 'react-18-features',
+        status: 'published',
+        description: '探讨 React 18 中的并发特性、自动批处理和 Suspense 的最新进展',
+        tags: ['React'],
+        publishDate: '2024-12-01',
+        cover: '',
+        blocks: [
+          {
+            type: 'heading_1',
+            heading_1: {
+              rich_text: [{ plain_text: 'React 18 新特性深度解析', annotations: {} }]
+            }
+          },
+          {
+            type: 'paragraph',
+            paragraph: {
+              rich_text: [{ plain_text: 'React 18 带来了许多令人兴奋的新特性...', annotations: {} }]
+            }
+          }
+        ]
+      }
+    };
+    post = mockPosts[slug!] || null;
+  }
+}
+
+if (!post) {
+  return Astro.redirect('/404');
+}
+
+const readingTime = post.blocks ? calculateReadingTime(post.blocks) : 5;
+const headings = post.blocks ? extractHeadingsFromBlocks(post.blocks) : [];
+const currentLang = getCurrentLanguage();
+const t = getTranslations(currentLang);
+const authorName = import.meta.env.AUTHOR_NAME || 'Blog Author';
+const siteUrl = import.meta.env.SITE_URL || 'https://your-domain.com';
+const postUrl = `${siteUrl}/posts/${post.slug}`;
+---
+
+<Layout 
+  title={post.title}
+  description={post.description}
+  article={true}
+  publishedTime={post.publishDate}
+  tags={post.tags}
+  author={authorName}
+>
+  <main class="min-h-screen bg-background">
+    <ReadingProgress />
+    <Navigation />
+
+    <!-- Clean Article Layout -->
+    <article class="max-w-4xl mx-auto px-6 py-12 md:py-16">
+      <div class="max-w-3xl mx-auto">
+          <!-- Post Header -->
+          <header class="mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6 text-balance leading-tight">
+              {post.title}
+            </h1>
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-sm text-foreground/60 pb-6 border-b border-border">
+              <div class="flex items-center gap-4">
+                <span>{authorName}</span>
+                <span>·</span>
+                <span>{readingTime} {t.minutes} {t.readingTime}</span>
+              </div>
+              <span>{t.publishedOn} {formatDate(post.publishDate)}</span>
+            </div>
+          </header>
+
+          <!-- Post Body -->
+          <div class="prose prose-lg max-w-none space-y-6">
+            {post.blocks && post.blocks.map((block: any) => (
+              <NotionBlock block={block} />
+            ))}
+          </div>
+
+          <!-- Share Buttons -->
+          <div class="mt-12">
+            <ShareButtons 
+              title={post.title}
+              url={postUrl}
+              description={post.description}
+            />
+          </div>
+
+          <!-- Footer -->
+          <footer class="mt-16 pt-8 border-t border-border">
+            <div class="flex items-center justify-between">
+              <div class="text-sm text-foreground/60">
+                <p>{t.thanksForReading}</p>
+              </div>
+              <Button asChild variant="outline">
+                <a href="/">{t.backToHome}</a>
+              </Button>
+            </div>
+          </footer>
+      </div>
+    </article>
+
+    <!-- Table of Contents -->
+    <TableOfContents headings={headings} />
+    
+    <BackToTop />
+  </main>
+</Layout>
+

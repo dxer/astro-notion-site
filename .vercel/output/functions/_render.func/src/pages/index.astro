@@ -1,0 +1,297 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import Hero from '../components/Hero.astro';
+import Footer from '../components/Footer.astro';
+import { getPosts, type BlogPost } from '../lib/notion';
+import { getCurrentLanguage, getTranslations } from '../lib/i18n';
+
+const currentLang = getCurrentLanguage();
+const t = getTranslations(currentLang);
+
+let allPosts: BlogPost[] = [];
+let posts: BlogPost[] = [];
+const POSTS_PER_PAGE = 10;
+
+try {
+  allPosts = await getPosts();
+  posts = allPosts.slice(0, POSTS_PER_PAGE); // 只显示前10篇
+} catch (error) {
+  console.error('Failed to fetch posts:', error);
+  // In development, show mock data
+  if (import.meta.env.DEV) {
+    allPosts = [
+      {
+        id: '1',
+        title: 'React 18 新特性深度解析',
+        slug: 'react-18-features',
+        status: 'published',
+        description: '探讨 React 18 中的并发特性、自动批处理和 Suspense 的最新进展...',
+        tags: ['React'],
+        publishDate: '2024-12-01',
+        cover: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&h=600&fit=crop&auto=format'
+      },
+      {
+        id: '2',
+        title: 'Next.js 15 App Router 最佳实践',
+        slug: 'nextjs-app-router-best-practices',
+        status: 'published',
+        description: '分享在生产环境中使用 App Router 的经验和优化技巧...',
+        tags: ['Next.js'],
+        publishDate: '2024-11-28',
+        cover: ''
+      },
+      {
+        id: '3',
+        title: 'Web 性能优化指南',
+        slug: 'web-performance-optimization',
+        status: 'published',
+        description: '从核心 Web 指标到实际优化方案，全面提升网站性能...',
+        tags: ['Performance'],
+        publishDate: '2024-11-15',
+        cover: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop&auto=format'
+      }
+    ];
+    posts = allPosts.slice(0, POSTS_PER_PAGE);
+  }
+}
+
+const hasMorePosts = allPosts.length > POSTS_PER_PAGE;
+---
+
+<Layout title={t.defaultTitle} description={t.defaultDescription}>
+  <main class="min-h-screen bg-background">
+    <Navigation />
+
+    <Hero />
+
+    <!-- Posts Section -->
+    <section id="posts" class="max-w-7xl mx-auto px-6 py-12 md:py-16">
+      <div class="space-y-10">
+        <div class="space-y-3">
+          <h2 class="text-2xl md:text-3xl font-bold">{t.latestPosts}</h2>
+          <p class="text-foreground/60">{t.latestPostsDescription}</p>
+        </div>
+
+        <!-- Masonry/Waterfall Layout -->
+        <div class="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6">
+          {posts.map((post, index) => {
+            // Create variety in card heights
+            const isLarge = index % 3 === 0; // Every 3rd card is larger
+            
+            return (
+              <article class="break-inside-avoid mb-6 group masonry-item" style={`animation-delay: ${index * 150}ms`}>
+                <a href={`/posts/${post.slug}`} class="block">
+                  <div class="bg-card border border-border rounded-2xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:border-primary/20">
+                    <!-- Image/Visual Area - Cover Image or Default -->
+                    <div class={`relative overflow-hidden rounded-t-2xl ${
+                      isLarge ? 'aspect-[4/3]' : 
+                      index % 4 === 1 ? 'aspect-square' :
+                      index % 4 === 2 ? 'aspect-video' :
+                      'aspect-[3/2]'
+                    }`}>
+                      <img 
+                        src={post.cover && post.cover.trim() !== '' ? post.cover : 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&h=600&fit=crop&auto=format'} 
+                        alt={post.title}
+                        class="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                      <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent pointer-events-none"></div>
+                    </div>
+                    
+                    <!-- Content Area -->
+                    <div class="p-6 space-y-4">
+                      <!-- Meta Info -->
+                      <div class="flex items-center gap-3 text-sm">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-medium bg-primary/10 text-primary">
+                          <div class="w-1.5 h-1.5 rounded-full bg-current"></div>
+                          {post.tags[0] || 'Article'}
+                        </span>
+                        <span class="text-foreground/50">
+                          {new Date(post.publishDate).toLocaleDateString(currentLang === 'zh' ? 'zh-CN' : 'en-US')}
+                        </span>
+                      </div>
+                      
+                      <!-- Title -->
+                      <h3 class={`font-bold text-foreground group-hover:text-primary transition-colors duration-300 leading-tight ${
+                        isLarge ? 'text-xl md:text-2xl' : 'text-lg md:text-xl'
+                      }`}>
+                        {post.title}
+                      </h3>
+                      
+                      <!-- Description -->
+                      <p class={`text-foreground/70 leading-relaxed ${
+                        isLarge ? 'text-base line-clamp-4' : 'text-sm line-clamp-3'
+                      }`}>
+                        {post.description}
+                      </p>
+                      
+                      <!-- Footer -->
+                      <div class="flex items-center justify-between pt-3 border-t border-border/50">
+                        <div class="flex items-center gap-2 text-xs text-foreground/50">
+                          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12,6 12,12 16,14"></polyline>
+                          </svg>
+                          <span>5 min read</span>
+                        </div>
+                        
+                        <div class="flex items-center gap-1 text-primary/70 group-hover:text-primary group-hover:gap-2 transition-all duration-300">
+                          <span class="text-sm font-medium">{t.readMore}</span>
+                          <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12,5 19,12 12,19"></polyline>
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              </article>
+            );
+          })}
+        </div>
+
+        <!-- Load More Button -->
+        {hasMorePosts && (
+          <div class="flex justify-center mt-12">
+            <button 
+              id="load-more-btn"
+              class="px-8 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors duration-300 font-medium"
+            >
+              {t.loadMore}
+            </button>
+          </div>
+        )}
+      </div>
+    </section>
+
+
+
+    <Footer />
+  </main>
+</Layout>
+
+<script define:vars={{ allPosts, POSTS_PER_PAGE, currentLang, t }}>
+  let currentPage = 1;
+  let isLoading = false;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const loadMoreBtn = document.getElementById('load-more-btn');
+    const postsContainer = document.querySelector('.columns-1');
+    
+    if (!loadMoreBtn || !postsContainer) return;
+
+    loadMoreBtn.addEventListener('click', async () => {
+      if (isLoading) return;
+      
+      isLoading = true;
+      loadMoreBtn.textContent = currentLang === 'zh' ? '加载中...' : 'Loading...';
+      loadMoreBtn.disabled = true;
+
+      try {
+        // 计算下一页的文章
+        const startIndex = currentPage * POSTS_PER_PAGE;
+        const endIndex = startIndex + POSTS_PER_PAGE;
+        const nextPosts = allPosts.slice(startIndex, endIndex);
+
+        if (nextPosts.length === 0) {
+          loadMoreBtn.style.display = 'none';
+          return;
+        }
+
+        // 创建新的文章卡片
+        nextPosts.forEach((post, index) => {
+          const globalIndex = startIndex + index;
+          const isLarge = globalIndex % 3 === 0;
+          
+          const article = document.createElement('article');
+          article.className = 'break-inside-avoid mb-6 group masonry-item';
+          article.style.animationDelay = `${index * 150}ms`;
+          
+          const aspectClass = isLarge ? 'aspect-[4/3]' : 
+                            globalIndex % 4 === 1 ? 'aspect-square' :
+                            globalIndex % 4 === 2 ? 'aspect-video' :
+                            'aspect-[3/2]';
+
+          const coverImage = post.cover && post.cover.trim() !== '' ? 
+                           post.cover : 
+                           'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&h=600&fit=crop&auto=format';
+
+          const publishDate = new Date(post.publishDate).toLocaleDateString(
+            currentLang === 'zh' ? 'zh-CN' : 'en-US'
+          );
+
+          article.innerHTML = `
+            <a href="/posts/${post.slug}" class="block">
+              <div class="bg-card border border-border rounded-2xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:border-primary/20">
+                <div class="relative overflow-hidden rounded-t-2xl ${aspectClass}">
+                  <img 
+                    src="${coverImage}" 
+                    alt="${post.title}"
+                    class="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent pointer-events-none"></div>
+                </div>
+                
+                <div class="p-6 space-y-4">
+                  <div class="flex items-center gap-3 text-sm">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-medium bg-primary/10 text-primary">
+                      <div class="w-1.5 h-1.5 rounded-full bg-current"></div>
+                      ${post.tags[0] || 'Article'}
+                    </span>
+                    <span class="text-foreground/50">${publishDate}</span>
+                  </div>
+                  
+                  <h3 class="font-bold text-foreground group-hover:text-primary transition-colors duration-300 leading-tight ${isLarge ? 'text-xl md:text-2xl' : 'text-lg md:text-xl'}">
+                    ${post.title}
+                  </h3>
+                  
+                  <p class="text-foreground/70 leading-relaxed ${isLarge ? 'text-base line-clamp-4' : 'text-sm line-clamp-3'}">
+                    ${post.description}
+                  </p>
+                  
+                  <div class="flex items-center justify-between pt-3 border-t border-border/50">
+                    <div class="flex items-center gap-2 text-xs text-foreground/50">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12,6 12,12 16,14"></polyline>
+                      </svg>
+                      <span>5 min read</span>
+                    </div>
+                    
+                    <div class="flex items-center gap-1 text-primary/70 group-hover:text-primary group-hover:gap-2 transition-all duration-300">
+                      <span class="text-sm font-medium">${t.readMore}</span>
+                      <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12,5 19,12 12,19"></polyline>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </a>
+          `;
+          
+          postsContainer.appendChild(article);
+        });
+
+        currentPage++;
+        
+        // 检查是否还有更多文章
+        if (currentPage * POSTS_PER_PAGE >= allPosts.length) {
+          loadMoreBtn.style.display = 'none';
+        }
+
+      } catch (error) {
+        console.error('Failed to load more posts:', error);
+      } finally {
+        isLoading = false;
+        loadMoreBtn.textContent = t.loadMore;
+        loadMoreBtn.disabled = false;
+      }
+    });
+  });
+</script>
+
