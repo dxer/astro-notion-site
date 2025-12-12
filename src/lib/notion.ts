@@ -45,7 +45,9 @@ export async function getPosts(): Promise<BlogPost[]> {
     throw new Error('NOTION_DATABASE_ID is not set');
   }
 
-  return withCache('posts', async () => {
+  try {
+    console.log('Attempting to query Notion database:', NOTION_DATABASE_ID);
+    
     const response = await notion.databases.query({
       database_id: NOTION_DATABASE_ID,
       filter: {
@@ -62,21 +64,34 @@ export async function getPosts(): Promise<BlogPost[]> {
       ],
     });
 
-    return response.results.map((page: any) => {
-      const properties = page.properties;
-      
-      return {
-        id: page.id,
-        title: properties.title?.title?.[0]?.plain_text || '',
-        slug: properties.slug?.rich_text?.[0]?.plain_text || '',
-        status: properties.status?.select?.name || 'draft',
-        description: properties.description?.rich_text?.[0]?.plain_text || '',
-        tags: properties.tags?.multi_select?.map((tag: any) => tag.name) || [],
-        publishDate: properties.publish_date?.date?.start || '',
-        cover: page.cover?.file?.url || page.cover?.external?.url || properties.cover?.files?.[0]?.file?.url || properties.cover?.files?.[0]?.external?.url || '',
-      };
+    console.log('Successfully queried Notion, found', response.results.length, 'posts');
+
+    return withCache('posts', async () => {
+      return response.results.map((page: any) => {
+        const properties = page.properties;
+        
+        return {
+          id: page.id,
+          title: properties.title?.title?.[0]?.plain_text || '',
+          slug: properties.slug?.rich_text?.[0]?.plain_text || '',
+          status: properties.status?.select?.name || 'draft',
+          description: properties.description?.rich_text?.[0]?.plain_text || '',
+          tags: properties.tags?.multi_select?.map((tag: any) => tag.name) || [],
+          publishDate: properties.publish_date?.date?.start || '',
+          cover: page.cover?.file?.url || page.cover?.external?.url || properties.cover?.files?.[0]?.file?.url || properties.cover?.files?.[0]?.external?.url || '',
+        };
+      });
+    }, 10); // Cache for 10 minutes
+  } catch (error: any) {
+    console.error('Error querying Notion database:', error);
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      status: error.status,
+      body: error.body
     });
-  }, 10); // Cache for 10 minutes
+    throw error;
+  }
 }
 
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
