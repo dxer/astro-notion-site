@@ -37,6 +37,10 @@
   ],
   "rewrites": [
     {
+      "source": "/(.*)",
+      "destination": "/$1"
+    },
+    {
       "source": "/api/search.json",
       "destination": "/api/search.json"
     }
