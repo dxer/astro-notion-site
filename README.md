@@ -241,28 +241,104 @@ HERO_STYLE=bold          # 粗体风格
 
 ### Vercel 部署 (推荐)
 
-1. **连接 GitHub**
+#### 前置准备
+1. **创建 Notion 集成**
+   - 访问 [Notion Integrations](https://www.notion.so/my-integrations)
+   - 创建新集成，获取 Integration Token
+   - 复制 Token 备用
+
+2. **准备 Notion 数据库**
+   - 创建包含以下字段的数据库：
+     - `title` (Title) - 文章标题
+     - `slug` (Text) - URL 路径
+     - `status` (Select) - 发布状态 (published/draft)
+     - `description` (Text) - 文章描述
+     - `tags` (Multi-select) - 文章标签
+     - `publish_date` (Date) - 发布日期
+     - `cover` (Files & media) - 封面图片
+   - 在数据库设置中分享给你创建的集成
+
+#### 部署步骤
+
+1. **推送代码到 GitHub**
    ```bash
    git add .
-   git commit -m "Initial commit"
+   git commit -m "Add Vercel deployment configuration"
    git push origin main
    ```
 
-2. **导入项目**
+2. **在 Vercel 导入项目**
    - 访问 [Vercel Dashboard](https://vercel.com/dashboard)
    - 点击 "New Project"
    - 选择你的 GitHub 仓库
+   - 点击 "Import"
 
-3. **配置环境变量**
-   在 Vercel 项目设置中添加所有 `.env` 中的变量
-
-4. **部署设置**
+3. **配置构建设置**
    ```
    Framework Preset: Astro
    Build Command: npm run build
    Output Directory: dist
    Install Command: npm install
+   Node.js Version: 18.x
    ```
+
+4. **添加环境变量**
+   在 Vercel 项目设置的 "Environment Variables" 中添加：
+   ```
+   NOTION_TOKEN=secret_xxxxxxxxxx
+   NOTION_DATABASE_ID=xxxxxxxxxx
+   SITE_URL=https://your-domain.vercel.app
+   SITE_TITLE=Your Blog Title
+   SITE_DESCRIPTION=Your blog description
+   AUTHOR_NAME=Your Name
+   # 其他环境变量...
+   ```
+
+5. **部署项目**
+   - 点击 "Deploy" 开始部署
+   - 等待构建完成（通常需要2-3分钟）
+   - 部署成功后，你会获得一个 `.vercel.app` 域名
+
+6. **配置自定义域名（可选）**
+   - 在项目设置中点击 "Domains"
+   - 添加你的自定义域名
+   - 按提示配置 DNS 记录
+
+#### 部署后验证
+
+1. **检查网站功能**
+   - 访问首页，确认文章列表正常显示
+   - 点击文章，确认详情页正常加载
+   - 测试搜索功能
+   - 检查响应式设计
+
+2. **常见问题排查**
+   - 如果页面空白，检查环境变量是否正确设置
+   - 如果文章不显示，确认 Notion 数据库权限和字段名称
+   - 查看部署日志获取详细错误信息
+
+#### 环境变量完整列表
+
+必需的环境变量：
+```env
+NOTION_TOKEN=secret_xxxxxxxxxx
+NOTION_DATABASE_ID=xxxxxxxxxx
+SITE_URL=https://your-domain.vercel.app
+SITE_TITLE=Your Blog Title
+SITE_DESCRIPTION=Your blog description
+AUTHOR_NAME=Your Name
+```
+
+可选的环境变量：
+```env
+SITE_LANGUAGE=en
+HERO_BADGE_TEXT=Welcome to my blog
+HERO_TITLE=Thoughts on Frontend Development
+HERO_SUBTITLE=Development
+HERO_DESCRIPTION=In-depth technical articles and insights
+GOOGLE_ANALYTICS_ID=G-XXXXXXXXXX
+DEFAULT_OG_IMAGE=https://your-domain.com/og-image.jpg
+```
 
 ### Netlify 部署
 

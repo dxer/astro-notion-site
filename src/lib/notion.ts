@@ -17,6 +17,15 @@ export interface BlogPost {
 const NOTION_TOKEN = import.meta.env.NOTION_TOKEN || process.env.NOTION_TOKEN;
 const NOTION_DATABASE_ID = import.meta.env.NOTION_DATABASE_ID || process.env.NOTION_DATABASE_ID;
 
+// Validate required environment variables
+if (!NOTION_TOKEN) {
+  console.warn('WARNING: NOTION_TOKEN is not set. Please set this environment variable.');
+}
+
+if (!NOTION_DATABASE_ID) {
+  console.warn('WARNING: NOTION_DATABASE_ID is not set. Please set this environment variable.');
+}
+
 const notion = new Client({
   auth: NOTION_TOKEN,
 });
