@@ -11,19 +11,6 @@ import { getPosts, getPostBySlug, formatDate } from '../../lib/notion';
 import { getCurrentLanguage, getTranslations } from '../../lib/i18n';
 import { extractHeadingsFromBlocks, calculateReadingTime } from '../../lib/markdown';
 
-export async function getStaticPaths() {
-  try {
-    const posts = await getPosts();
-    return posts.map((post) => ({
-      params: { slug: post.slug },
-    }));
-  } catch (error) {
-    console.error('Failed to fetch posts for static paths:', error);
-    // Return empty array in case of error
-    return [];
-  }
-}
-
 const { slug } = Astro.params;
 
 let post = null;
