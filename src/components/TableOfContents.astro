@@ -1,0 +1,459 @@
+---
+import { getCurrentLanguage, getTranslations } from '../lib/i18n';
+
+export interface Heading {
+  level: number;
+  text: string;
+  id: string;
+}
+
+interface Props {
+  headings: Heading[];
+}
+
+const { headings } = Astro.props;
+const currentLang = getCurrentLanguage();
+const t = getTranslations(currentLang);
+---
+
+{headings.length > 0 && (
+  <>
+    <!-- Desktop TOC - Enhanced UX -->
+    <div class="hidden lg:block fixed left-4 top-1/2 -translate-y-1/2 z-40">
+      <!-- TOC Trigger Button -->
+      <button 
+        id="desktop-toc-trigger"
+        class="group flex items-center justify-center w-10 h-10 bg-background/80 backdrop-blur-sm border border-border rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:bg-background"
+        aria-label="Toggle table of contents"
+      >
+        <svg class="w-5 h-5 text-foreground/60 group-hover:text-foreground transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path>
+        </svg>
+      </button>
+
+      <!-- TOC Panel -->
+      <nav 
+        id="desktop-toc-panel"
+        class="absolute left-14 top-1/2 -translate-y-1/2 w-72 bg-background/95 backdrop-blur-md border border-border rounded-xl shadow-2xl opacity-0 invisible transform -translate-x-4 transition-all duration-300 ease-out"
+      >
+        <div class="p-6">
+          <!-- Header -->
+          <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-3">
+              <div class="w-2 h-2 rounded-full bg-primary"></div>
+              <h3 class="font-semibold text-foreground text-base">{t.tableOfContents}</h3>
+            </div>
+            <button 
+              id="desktop-toc-close"
+              class="p-1.5 rounded-lg hover:bg-secondary/80 transition-colors group"
+              aria-label="Close table of contents"
+            >
+              <svg class="w-4 h-4 text-foreground/60 group-hover:text-foreground transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+
+          <!-- TOC Content -->
+          <div class="max-h-[60vh] overflow-y-auto toc-scrollbar pr-2">
+            <ul class="space-y-1">
+              {headings.map((heading, index) => (
+                <li 
+                  class={`toc-item opacity-0 transform translate-x-2 transition-all duration-300 ease-out ${
+                    heading.level === 2 ? "ml-4" : heading.level === 3 ? "ml-8" : ""
+                  }`}
+                  style={`animation-delay: ${index * 50}ms`}
+                >
+                  <a
+                    href={`#${heading.id}`}
+                    class="group flex items-start gap-3 text-foreground/70 hover:text-foreground transition-all duration-200 toc-link py-2.5 px-3 rounded-lg hover:bg-secondary/50 relative"
+                    data-heading-id={heading.id}
+                  >
+                    <!-- Level indicator -->
+                    <div class={`flex-shrink-0 mt-2 transition-all duration-200 ${
+                      heading.level === 1 ? "w-1.5 h-1.5 bg-primary rounded-full" :
+                      heading.level === 2 ? "w-1 h-1 bg-primary/70 rounded-full" :
+                      "w-0.5 h-0.5 bg-primary/50 rounded-full"
+                    }`}></div>
+                    
+                    <!-- Text -->
+                    <span class={`leading-relaxed transition-all duration-200 ${
+                      heading.level === 1 ? "font-semibold text-sm" :
+                      heading.level === 2 ? "font-medium text-sm" :
+                      "text-xs"
+                    }`}>
+                      {heading.text}
+                    </span>
+
+                    <!-- Active indicator -->
+                    <div class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-0 bg-primary rounded-full transition-all duration-200 toc-active-indicator"></div>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <!-- Progress indicator -->
+          <div class="mt-4 pt-4 border-t border-border/50">
+            <div class="flex items-center gap-2 text-xs text-foreground/50">
+              <div class="w-1.5 h-1.5 bg-primary/30 rounded-full"></div>
+              <span id="reading-progress">0% 已阅读</span>
+            </div>
+            <div class="mt-2 w-full h-1 bg-secondary rounded-full overflow-hidden">
+              <div id="progress-bar" class="h-full bg-primary transition-all duration-300 ease-out" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </div>
+
+    <!-- Mobile TOC - Enhanced UX -->
+    <div class="lg:hidden">
+      <!-- Backdrop -->
+      <div 
+        id="mobile-toc-backdrop"
+        class="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 opacity-0 invisible transition-all duration-300"
+      ></div>
+
+      <!-- Floating Trigger -->
+      <button 
+        id="mobile-toc-trigger"
+        class="fixed bottom-6 right-6 z-50 group flex items-center justify-center w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95"
+        aria-label="Toggle table of contents"
+      >
+        <svg id="mobile-toc-icon" class="w-6 h-6 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path>
+        </svg>
+      </button>
+
+      <!-- Mobile TOC Panel -->
+      <div 
+        id="mobile-toc-panel"
+        class="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border rounded-t-2xl shadow-2xl transform translate-y-full transition-all duration-500 ease-out"
+      >
+        <!-- Handle -->
+        <div class="flex justify-center pt-3 pb-2">
+          <div class="w-12 h-1 bg-border rounded-full"></div>
+        </div>
+
+        <div class="px-6 pb-6">
+          <!-- Header -->
+          <div class="flex items-center justify-between py-4 border-b border-border/50">
+            <div class="flex items-center gap-3">
+              <div class="w-2 h-2 rounded-full bg-primary"></div>
+              <h3 class="font-semibold text-foreground">{t.tableOfContents}</h3>
+            </div>
+            <button 
+              id="mobile-toc-close"
+              class="p-2 rounded-lg hover:bg-secondary/80 transition-colors"
+              aria-label="Close table of contents"
+            >
+              <svg class="w-5 h-5 text-foreground/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+          </div>
+
+          <!-- TOC Content -->
+          <div class="max-h-[50vh] overflow-y-auto toc-scrollbar py-4">
+            <ul class="space-y-2">
+              {headings.map((heading, index) => (
+                <li 
+                  class={`mobile-toc-item opacity-0 transform translate-y-4 transition-all duration-300 ease-out ${
+                    heading.level === 2 ? "ml-4" : heading.level === 3 ? "ml-8" : ""
+                  }`}
+                  style={`animation-delay: ${index * 30}ms`}
+                >
+                  <a
+                    href={`#${heading.id}`}
+                    class="group flex items-center gap-3 text-foreground/70 hover:text-foreground transition-all duration-200 toc-link mobile-toc-link py-3 px-4 rounded-xl hover:bg-secondary/50 relative"
+                    data-heading-id={heading.id}
+                  >
+                    <!-- Level indicator -->
+                    <div class={`flex-shrink-0 transition-all duration-200 ${
+                      heading.level === 1 ? "w-2 h-2 bg-primary rounded-full" :
+                      heading.level === 2 ? "w-1.5 h-1.5 bg-primary/70 rounded-full" :
+                      "w-1 h-1 bg-primary/50 rounded-full"
+                    }`}></div>
+                    
+                    <!-- Text -->
+                    <span class={`leading-relaxed transition-all duration-200 ${
+                      heading.level === 1 ? "font-semibold" :
+                      heading.level === 2 ? "font-medium" :
+                      "text-sm"
+                    }`}>
+                      {heading.text}
+                    </span>
+
+                    <!-- Arrow -->
+                    <svg class="w-4 h-4 ml-auto text-foreground/30 group-hover:text-foreground/60 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </>
+)}
+
+<script>
+  function initTableOfContents() {
+    const tocLinks = document.querySelectorAll('.toc-link');
+    const headings = Array.from(document.querySelectorAll('h1[id], h2[id], h3[id]'));
+    
+    // Desktop TOC elements
+    const desktopTrigger = document.getElementById('desktop-toc-trigger');
+    const desktopPanel = document.getElementById('desktop-toc-panel');
+    const desktopClose = document.getElementById('desktop-toc-close');
+    
+    // Mobile TOC elements
+    const mobileTrigger = document.getElementById('mobile-toc-trigger');
+    const mobilePanel = document.getElementById('mobile-toc-panel');
+    const mobileClose = document.getElementById('mobile-toc-close');
+    const mobileBackdrop = document.getElementById('mobile-toc-backdrop');
+    const mobileIcon = document.getElementById('mobile-toc-icon');
+    const mobileTocLinks = document.querySelectorAll('.mobile-toc-link');
+    
+    // Progress elements
+    const progressBar = document.getElementById('progress-bar');
+    const readingProgress = document.getElementById('reading-progress');
+    
+    let isDesktopTocOpen = false;
+    let isMobileTocOpen = false;
+    
+    // Desktop TOC functionality
+    function showDesktopToc() {
+      if (isDesktopTocOpen) return;
+      isDesktopTocOpen = true;
+      
+      desktopPanel?.classList.remove('opacity-0', 'invisible', '-translate-x-4');
+      desktopPanel?.classList.add('opacity-100', 'visible', 'translate-x-0');
+      
+      // Animate TOC items
+      setTimeout(() => {
+        const tocItems = desktopPanel?.querySelectorAll('.toc-item');
+        tocItems?.forEach((item, index) => {
+          setTimeout(() => {
+            item.classList.remove('opacity-0', 'translate-x-2');
+            item.classList.add('opacity-100', 'translate-x-0');
+          }, index * 50);
+        });
+      }, 100);
+    }
+    
+    function hideDesktopToc() {
+      if (!isDesktopTocOpen) return;
+      isDesktopTocOpen = false;
+      
+      desktopPanel?.classList.remove('opacity-100', 'visible', 'translate-x-0');
+      desktopPanel?.classList.add('opacity-0', 'invisible', '-translate-x-4');
+      
+      // Reset TOC items
+      const tocItems = desktopPanel?.querySelectorAll('.toc-item');
+      tocItems?.forEach(item => {
+        item.classList.remove('opacity-100', 'translate-x-0');
+        item.classList.add('opacity-0', 'translate-x-2');
+      });
+    }
+    
+    // Mobile TOC functionality
+    function showMobileToc() {
+      if (isMobileTocOpen) return;
+      isMobileTocOpen = true;
+      
+      // Show backdrop
+      mobileBackdrop?.classList.remove('opacity-0', 'invisible');
+      mobileBackdrop?.classList.add('opacity-100', 'visible');
+      
+      // Show panel
+      mobilePanel?.classList.remove('translate-y-full');
+      mobilePanel?.classList.add('translate-y-0');
+      
+      // Rotate icon
+      mobileIcon?.classList.add('rotate-45');
+      
+      // Animate mobile TOC items
+      setTimeout(() => {
+        const mobileTocItems = mobilePanel?.querySelectorAll('.mobile-toc-item');
+        mobileTocItems?.forEach((item, index) => {
+          setTimeout(() => {
+            item.classList.remove('opacity-0', 'translate-y-4');
+            item.classList.add('opacity-100', 'translate-y-0');
+          }, index * 30);
+        });
+      }, 200);
+      
+      // Prevent body scroll
+      document.body.style.overflow = 'hidden';
+    }
+    
+    function hideMobileToc() {
+      if (!isMobileTocOpen) return;
+      isMobileTocOpen = false;
+      
+      // Hide backdrop
+      mobileBackdrop?.classList.remove('opacity-100', 'visible');
+      mobileBackdrop?.classList.add('opacity-0', 'invisible');
+      
+      // Hide panel
+      mobilePanel?.classList.remove('translate-y-0');
+      mobilePanel?.classList.add('translate-y-full');
+      
+      // Reset icon
+      mobileIcon?.classList.remove('rotate-45');
+      
+      // Reset mobile TOC items
+      const mobileTocItems = mobilePanel?.querySelectorAll('.mobile-toc-item');
+      mobileTocItems?.forEach(item => {
+        item.classList.remove('opacity-100', 'translate-y-0');
+        item.classList.add('opacity-0', 'translate-y-4');
+      });
+      
+      // Restore body scroll
+      document.body.style.overflow = '';
+    }
+    
+    // Event listeners
+    desktopTrigger?.addEventListener('click', showDesktopToc);
+    desktopClose?.addEventListener('click', hideDesktopToc);
+    
+    mobileTrigger?.addEventListener('click', showMobileToc);
+    mobileClose?.addEventListener('click', hideMobileToc);
+    mobileBackdrop?.addEventListener('click', hideMobileToc);
+    
+    // Close desktop TOC when clicking outside
+    document.addEventListener('click', (e) => {
+      if (isDesktopTocOpen && 
+          !desktopPanel?.contains(e.target as Node) && 
+          !desktopTrigger?.contains(e.target as Node)) {
+        hideDesktopToc();
+      }
+    });
+    
+    // Close mobile TOC when clicking a link
+    mobileTocLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        setTimeout(hideMobileToc, 300); // Delay to allow smooth scroll
+      });
+    });
+    
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (isDesktopTocOpen) hideDesktopToc();
+        if (isMobileTocOpen) hideMobileToc();
+      }
+    });
+    
+    // Active heading tracking and progress
+    if (tocLinks.length > 0 && headings.length > 0) {
+      function updateActiveHeading() {
+        let activeHeading = null;
+        let currentIndex = -1;
+        
+        // Find the heading that's currently in view
+        for (let i = 0; i < headings.length; i++) {
+          const heading = headings[i];
+          const rect = heading.getBoundingClientRect();
+          if (rect.top <= 120) {
+            activeHeading = heading;
+            currentIndex = i;
+          } else {
+            break;
+          }
+        }
+        
+        // Update progress based on scroll position
+        if (progressBar && readingProgress) {
+          const scrollTop = window.pageYOffset;
+          const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+          const scrollProgress = Math.min(Math.max(scrollTop / docHeight, 0), 1);
+          const progress = scrollProgress * 100;
+          
+          progressBar.style.width = `${progress}%`;
+          
+          const currentLang = document.documentElement.lang || 'en';
+          const progressText = currentLang === 'zh' ? `${Math.round(progress)}% 已阅读` : `${Math.round(progress)}% read`;
+          readingProgress.textContent = progressText;
+        }
+        
+        // Update active states
+        tocLinks.forEach(link => {
+          const headingId = link.getAttribute('data-heading-id');
+          const activeIndicator = link.querySelector('.toc-active-indicator');
+          
+          if (activeHeading && activeHeading.id === headingId) {
+            // Active state
+            link.classList.add('text-foreground');
+            link.classList.remove('text-foreground/70');
+            link.parentElement?.classList.add('bg-primary/5');
+            
+            // Active indicator
+            if (activeIndicator) {
+              activeIndicator.classList.remove('h-0');
+              activeIndicator.classList.add('h-6');
+            }
+          } else {
+            // Inactive state
+            link.classList.remove('text-foreground');
+            link.classList.add('text-foreground/70');
+            link.parentElement?.classList.remove('bg-primary/5');
+            
+            // Inactive indicator
+            if (activeIndicator) {
+              activeIndicator.classList.remove('h-6');
+              activeIndicator.classList.add('h-0');
+            }
+          }
+        });
+      }
+
+      // Throttled scroll handler for better performance
+      let scrollAnimationFrame: number;
+      function handleScroll() {
+        if (scrollAnimationFrame) {
+          cancelAnimationFrame(scrollAnimationFrame);
+        }
+        scrollAnimationFrame = requestAnimationFrame(updateActiveHeading);
+      }
+
+      window.addEventListener('scroll', handleScroll, { passive: true });
+      
+      // Initial update
+      updateActiveHeading();
+    }
+    
+    // Auto-hide desktop TOC on scroll (optional UX enhancement)
+    let lastScrollY = window.scrollY;
+    let autoHideTimeout: ReturnType<typeof setTimeout>;
+    
+    function handleAutoHide() {
+      const currentScrollY = window.scrollY;
+      const scrollDelta = Math.abs(currentScrollY - lastScrollY);
+      
+      // Auto-hide if scrolling fast and TOC is open
+      if (scrollDelta > 100 && isDesktopTocOpen) {
+        hideDesktopToc();
+      }
+      
+      lastScrollY = currentScrollY;
+    }
+    
+    window.addEventListener('scroll', () => {
+      if (autoHideTimeout) {
+        clearTimeout(autoHideTimeout);
+      }
+      autoHideTimeout = setTimeout(handleAutoHide, 150);
+    }, { passive: true });
+  }
+
+  // Initialize on page load
+  initTableOfContents();
+  
+  // Re-initialize on navigation (for SPA-like behavior)
+  document.addEventListener('astro:page-load', initTableOfContents);
+</script>

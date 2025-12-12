@@ -1,0 +1,76 @@
+---
+// Back to top button component
+---
+
+<button
+  id="back-to-top"
+  class="fixed bottom-6 right-6 p-3 bg-foreground text-background rounded-full shadow-lg hover:shadow-xl transition-all duration-300 opacity-0 invisible translate-y-4 z-40"
+  aria-label="Back to top"
+>
+  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <line x1="12" y1="19" x2="12" y2="5"></line>
+    <polyline points="5,12 12,5 19,12"></polyline>
+  </svg>
+</button>
+
+<script>
+  function initBackToTop() {
+    const backToTopButton = document.getElementById('back-to-top');
+    if (!backToTopButton) return;
+    
+    function toggleVisibility() {
+      if (!backToTopButton) return;
+      
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      
+      if (scrollTop > 300) {
+        backToTopButton.classList.remove('opacity-0', 'invisible', 'translate-y-4');
+        backToTopButton.classList.add('opacity-100', 'visible', 'translate-y-0');
+      } else {
+        backToTopButton.classList.add('opacity-0', 'invisible', 'translate-y-4');
+        backToTopButton.classList.remove('opacity-100', 'visible', 'translate-y-0');
+      }
+    }
+    
+    function scrollToTop() {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+    
+    // Throttle scroll events
+    let ticking = false;
+    function handleScroll() {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          toggleVisibility();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    backToTopButton.addEventListener('click', scrollToTop);
+    
+    // Initial check
+    toggleVisibility();
+  }
+  
+  // Initialize on page load
+  initBackToTop();
+  
+  // Re-initialize on navigation
+  document.addEventListener('astro:page-load', initBackToTop);
+</script>
+
+<style>
+  #back-to-top:hover {
+    transform: translateY(-2px);
+  }
+  
+  #back-to-top:active {
+    transform: translateY(0);
+  }
+</style>

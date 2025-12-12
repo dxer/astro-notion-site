@@ -1,0 +1,222 @@
+---
+import { getCurrentLanguage, getTranslations } from '../lib/i18n';
+
+const { pathname } = Astro.url;
+const currentLang = getCurrentLanguage();
+const t = getTranslations(currentLang);
+const siteTitle = import.meta.env.SITE_TITLE || t.defaultTitle;
+---
+
+<nav class="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
+  <div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
+    <!-- Vercel-style Logo -->
+    <a href="/" class="group flex items-center gap-3 text-lg font-semibold text-foreground hover:opacity-80 transition-opacity duration-200">
+      <div class="relative">
+        <div class="w-7 h-7 bg-foreground rounded-sm flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+          <svg class="w-4 h-4 text-background" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2L2 7v10c0 5.55 3.84 9.739 9 11 5.16-1.261 9-5.45 9-11V7l-10-5z"/>
+          </svg>
+        </div>
+        <div class="absolute -inset-1 bg-gradient-to-r from-vercel-blue to-vercel-cyan rounded-sm opacity-0 group-hover:opacity-20 transition-opacity duration-200 blur-sm"></div>
+      </div>
+      <span class="hidden sm:block font-medium">{siteTitle}</span>
+    </a>
+    
+    <!-- Vercel-style Navigation -->
+    <div class="flex items-center gap-4">
+      <!-- Desktop Navigation -->
+      <div class="hidden md:flex items-center gap-6">
+        <a 
+          href="/" 
+          class="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors duration-200 relative group"
+        >
+          {t.home}
+          <div class="absolute -bottom-1 left-0 w-0 h-0.5 bg-foreground group-hover:w-full transition-all duration-200"></div>
+        </a>
+        <a 
+          href="/#posts" 
+          class="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors duration-200 relative group"
+        >
+          {t.posts}
+          <div class="absolute -bottom-1 left-0 w-0 h-0.5 bg-foreground group-hover:w-full transition-all duration-200"></div>
+        </a>
+        <a 
+          href="/tags" 
+          class="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors duration-200 relative group"
+        >
+          {t.tags}
+          <div class="absolute -bottom-1 left-0 w-0 h-0.5 bg-foreground group-hover:w-full transition-all duration-200"></div>
+        </a>
+        <a 
+          href="/about" 
+          class="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors duration-200 relative group"
+        >
+          {t.about}
+          <div class="absolute -bottom-1 left-0 w-0 h-0.5 bg-foreground group-hover:w-full transition-all duration-200"></div>
+        </a>
+      </div>
+      
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-2">
+        <!-- Search Button -->
+        <button
+          id="search-toggle"
+          class="p-2 rounded-md hover:bg-secondary transition-colors duration-200 group"
+          aria-label="Search"
+        >
+          <svg class="w-4 h-4 text-foreground/60 group-hover:text-foreground transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+        </button>
+        
+        <!-- Vercel-style Theme Toggle -->
+        <button
+          id="theme-toggle"
+          class="p-2 rounded-md hover:bg-secondary transition-colors duration-200 group"
+          aria-label="Toggle theme"
+        >
+          <svg id="sun-icon" class="w-4 h-4 hidden text-foreground/60 group-hover:text-foreground transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg id="moon-icon" class="w-4 h-4 text-foreground/60 group-hover:text-foreground transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+
+        <!-- Mobile Menu Button -->
+        <button
+          id="mobile-menu-toggle"
+          class="md:hidden p-2 rounded-md hover:bg-secondary transition-colors duration-200 group"
+          aria-label="Toggle mobile menu"
+        >
+          <svg id="hamburger-icon" class="w-5 h-5 text-foreground/60 group-hover:text-foreground transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+          <svg id="close-icon" class="w-5 h-5 text-foreground/60 group-hover:text-foreground transition-colors hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div id="mobile-menu" class="md:hidden hidden bg-background/95 backdrop-blur-xl border-b border-border">
+    <div class="max-w-6xl mx-auto px-6 py-4 space-y-3">
+      <a 
+        href="/" 
+        class="block py-2 text-sm font-medium text-foreground/60 hover:text-foreground transition-colors duration-200"
+      >
+        {t.home}
+      </a>
+      <a 
+        href="/#posts" 
+        class="block py-2 text-sm font-medium text-foreground/60 hover:text-foreground transition-colors duration-200"
+      >
+        {t.posts}
+      </a>
+      <a 
+        href="/tags" 
+        class="block py-2 text-sm font-medium text-foreground/60 hover:text-foreground transition-colors duration-200"
+      >
+        {t.tags}
+      </a>
+      <a 
+        href="/about" 
+        class="block py-2 text-sm font-medium text-foreground/60 hover:text-foreground transition-colors duration-200"
+      >
+        {t.about}
+      </a>
+    </div>
+  </div>
+  </div>
+</nav>
+
+<script>
+  function initTheme() {
+    const themeToggle = document.getElementById('theme-toggle');
+    const sunIcon = document.getElementById('sun-icon');
+    const moonIcon = document.getElementById('moon-icon');
+    
+    // Get initial theme
+    const savedTheme = localStorage.getItem('theme');
+    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    const currentTheme = savedTheme || systemTheme;
+    
+    // Apply theme
+    function applyTheme(theme: string) {
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+        sunIcon?.classList.remove('hidden');
+        moonIcon?.classList.add('hidden');
+      } else {
+        document.documentElement.classList.remove('dark');
+        sunIcon?.classList.add('hidden');
+        moonIcon?.classList.remove('hidden');
+      }
+    }
+    
+    applyTheme(currentTheme);
+    
+    // Toggle theme
+    themeToggle?.addEventListener('click', () => {
+      const isDark = document.documentElement.classList.contains('dark');
+      const newTheme = isDark ? 'light' : 'dark';
+      localStorage.setItem('theme', newTheme);
+      applyTheme(newTheme);
+    });
+  }
+
+  function initMobileMenu() {
+    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const hamburgerIcon = document.getElementById('hamburger-icon');
+    const closeIcon = document.getElementById('close-icon');
+    
+    mobileMenuToggle?.addEventListener('click', () => {
+      const isOpen = !mobileMenu?.classList.contains('hidden');
+      
+      if (isOpen) {
+        mobileMenu?.classList.add('hidden');
+        hamburgerIcon?.classList.remove('hidden');
+        closeIcon?.classList.add('hidden');
+      } else {
+        mobileMenu?.classList.remove('hidden');
+        hamburgerIcon?.classList.add('hidden');
+        closeIcon?.classList.remove('hidden');
+      }
+    });
+
+    // Close mobile menu when clicking on links
+    const mobileLinks = mobileMenu?.querySelectorAll('a');
+    mobileLinks?.forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu?.classList.add('hidden');
+        hamburgerIcon?.classList.remove('hidden');
+        closeIcon?.classList.add('hidden');
+      });
+    });
+  }
+  
+  // Initialize on page load
+  initTheme();
+  initMobileMenu();
+  
+  // Re-initialize on navigation (for SPA-like behavior)
+  document.addEventListener('astro:page-load', () => {
+    initTheme();
+    initMobileMenu();
+  });
+</script>

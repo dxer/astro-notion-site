@@ -1,0 +1,199 @@
+---
+interface Props {
+  block: any;
+}
+
+const { block } = Astro.props;
+
+function renderRichText(richText: any[]) {
+  if (!richText) return '';
+  
+  return richText.map(text => {
+    let content = text.plain_text;
+    
+    if (text.annotations.bold) {
+      content = `<strong>${content}</strong>`;
+    }
+    if (text.annotations.italic) {
+      content = `<em>${content}</em>`;
+    }
+    if (text.annotations.code) {
+      content = `<code class="bg-secondary px-1.5 py-0.5 rounded text-sm">${content}</code>`;
+    }
+    if (text.annotations.strikethrough) {
+      content = `<del>${content}</del>`;
+    }
+    if (text.annotations.underline) {
+      content = `<u>${content}</u>`;
+    }
+    if (text.href) {
+      content = `<a href="${text.href}" class="text-primary hover:underline" target="_blank" rel="noopener noreferrer">${content}</a>`;
+    }
+    
+    return content;
+  }).join('');
+}
+---
+
+{block.type === 'paragraph' && (
+  <p class="text-foreground/80 leading-relaxed my-4" set:html={renderRichText(block.paragraph.rich_text)} />
+)}
+
+{block.type === 'heading_1' && (
+  <h1 
+    id={block.heading_1.rich_text?.map((t: any) => t.plain_text).join('').toLowerCase().replace(/\s+/g, '-').replace(/[^\w\-]/g, '')}
+    class="text-3xl font-bold mt-8 mb-4 scroll-mt-20 text-foreground" 
+    set:html={renderRichText(block.heading_1.rich_text)} 
+  />
+)}
+
+{block.type === 'heading_2' && (
+  <h2 
+    id={block.heading_2.rich_text?.map((t: any) => t.plain_text).join('').toLowerCase().replace(/\s+/g, '-').replace(/[^\w\-]/g, '')}
+    class="text-2xl font-semibold mt-8 mb-4 scroll-mt-20 text-foreground" 
+    set:html={renderRichText(block.heading_2.rich_text)} 
+  />
+)}
+
+{block.type === 'heading_3' && (
+  <h3 
+    id={block.heading_3.rich_text?.map((t: any) => t.plain_text).join('').toLowerCase().replace(/\s+/g, '-').replace(/[^\w\-]/g, '')}
+    class="text-xl font-semibold mt-6 mb-3 scroll-mt-20 text-foreground" 
+    set:html={renderRichText(block.heading_3.rich_text)} 
+  />
+)}
+
+{block.type === 'bulleted_list_item' && (
+  <li class="ml-6 my-2 text-foreground/80" set:html={renderRichText(block.bulleted_list_item.rich_text)} />
+)}
+
+{block.type === 'numbered_list_item' && (
+  <li class="ml-6 my-2 text-foreground/80" set:html={renderRichText(block.numbered_list_item.rich_text)} />
+)}
+
+{block.type === 'quote' && (
+  <blockquote class="border-l-4 border-primary/30 pl-4 italic my-4 text-foreground/70" set:html={renderRichText(block.quote.rich_text)} />
+)}
+
+{block.type === 'code' && (
+  <pre class="bg-secondary border border-border rounded-lg p-4 overflow-x-auto my-6">
+    <code class="text-sm text-foreground">{block.code.rich_text[0]?.plain_text || ''}</code>
+  </pre>
+)}
+
+{block.type === 'divider' && (
+  <hr class="border-border my-8" />
+)}
+
+{block.type === 'image' && (
+  <div class="my-6">
+    <img 
+      src={block.image.file?.url || block.image.external?.url} 
+      alt={block.image.caption?.[0]?.plain_text || ''}
+      class="rounded-lg max-w-full h-auto"
+    />
+    {block.image.caption && block.image.caption.length > 0 && (
+      <p class="text-sm text-foreground/60 text-center mt-2" set:html={renderRichText(block.image.caption)} />
+    )}
+  </div>
+)}
+
+{block.type === 'callout' && (
+  <div class="bg-primary/10 border border-primary/20 rounded-lg p-4 my-6">
+    <div class="flex items-start gap-3">
+      {block.callout.icon && (
+        <span class="text-lg">{block.callout.icon.emoji}</span>
+      )}
+      <div class="flex-1" set:html={renderRichText(block.callout.rich_text)} />
+    </div>
+  </div>
+)}
+
+{block.type === 'toggle' && (
+  <details class="my-4">
+    <summary class="cursor-pointer font-medium text-foreground hover:text-primary" set:html={renderRichText(block.toggle.rich_text)} />
+    <div class="mt-2 ml-4">
+      <!-- Toggle content would need recursive rendering -->
+    </div>
+  </details>
+)}
+
+{block.type === 'to_do' && (
+  <div class="flex items-start gap-2 my-2">
+    <input 
+      type="checkbox" 
+      checked={block.to_do.checked} 
+      disabled 
+      class="mt-1"
+    />
+    <span class={`text-foreground/80 ${block.to_do.checked ? 'line-through opacity-60' : ''}`} set:html={renderRichText(block.to_do.rich_text)} />
+  </div>
+)}
+
+{block.type === 'table' && (
+  <div class="my-6 overflow-x-auto">
+    <table class="min-w-full border border-border rounded-lg">
+      <tbody>
+        {block.table.table_rows?.map((row: any, index: number) => (
+          <tr class={index === 0 ? 'bg-secondary' : 'hover:bg-secondary/50'}>
+            {row.cells?.map((cell: any, cellIndex: number) => (
+              index === 0 ? (
+                <th class="border border-border px-4 py-2 text-left font-semibold" set:html={renderRichText(cell)} />
+              ) : (
+                <td class="border border-border px-4 py-2" set:html={renderRichText(cell)} />
+              )
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+)}
+
+{block.type === 'embed' && (
+  <div class="my-6">
+    <iframe 
+      src={block.embed.url} 
+      class="w-full h-64 rounded-lg border border-border"
+      frameborder="0"
+      allowfullscreen
+    ></iframe>
+  </div>
+)}
+
+{block.type === 'video' && (
+  <div class="my-6">
+    <video 
+      src={block.video.file?.url || block.video.external?.url} 
+      controls 
+      class="w-full rounded-lg"
+    >
+      您的浏览器不支持视频播放。
+    </video>
+  </div>
+)}
+
+{block.type === 'file' && (
+  <div class="my-4">
+    <a 
+      href={block.file.file?.url || block.file.external?.url}
+      class="inline-flex items-center gap-2 px-4 py-2 bg-secondary rounded-lg hover:bg-secondary/80 transition-colors"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+      {block.file.caption?.[0]?.plain_text || '下载文件'}
+    </a>
+  </div>
+)}
+
+<!-- Fallback for unsupported block types -->
+{!['paragraph', 'heading_1', 'heading_2', 'heading_3', 'bulleted_list_item', 'numbered_list_item', 'quote', 'code', 'divider', 'image', 'callout', 'toggle', 'to_do', 'table', 'embed', 'video', 'file'].includes(block.type) && (
+  <div class="my-4 p-3 bg-muted rounded border-l-4 border-muted-foreground">
+    <p class="text-sm text-muted-foreground">
+      不支持的块类型: {block.type}
+    </p>
+  </div>
+)}

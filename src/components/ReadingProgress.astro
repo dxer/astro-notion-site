@@ -1,0 +1,62 @@
+---
+// Reading progress bar component
+---
+
+<div id="reading-progress" class="fixed top-0 left-0 w-full h-1 bg-border z-50">
+  <div id="progress-bar" class="h-full bg-gradient-to-r from-vercel-blue to-vercel-cyan transition-all duration-150 ease-out" style="width: 0%"></div>
+</div>
+
+<script>
+  function initReadingProgress() {
+    const progressBar = document.getElementById('progress-bar');
+    const article = document.querySelector('article');
+    
+    if (!progressBar || !article) return;
+    
+    function updateProgress() {
+      if (!progressBar || !article) return;
+      
+      const articleHeight = article.offsetHeight;
+      const windowHeight = window.innerHeight;
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      
+      // Calculate article position relative to viewport
+      const articleTop = article.offsetTop;
+      const articleBottom = articleTop + articleHeight;
+      
+      // Calculate progress
+      let progress = 0;
+      
+      if (scrollTop >= articleTop && scrollTop <= articleBottom - windowHeight) {
+        const scrolledInArticle = scrollTop - articleTop;
+        const maxScroll = articleHeight - windowHeight;
+        progress = Math.min(scrolledInArticle / maxScroll, 1);
+      } else if (scrollTop > articleBottom - windowHeight) {
+        progress = 1;
+      }
+      
+      progressBar.style.width = `${progress * 100}%`;
+    }
+    
+    // Throttle scroll events for better performance
+    let ticking = false;
+    function handleScroll() {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          updateProgress();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    updateProgress(); // Initial calculation
+  }
+  
+  // Initialize on page load
+  initReadingProgress();
+  
+  // Re-initialize on navigation (for SPA-like behavior)
+  document.addEventListener('astro:page-load', initReadingProgress);
+</script>

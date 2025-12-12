@@ -1,0 +1,84 @@
+---
+import SEO from '../components/SEO.astro';
+import GoogleAnalytics from '../components/GoogleAnalytics.astro';
+import Search from '../components/Search.astro';
+import { getCurrentLanguage } from '../lib/i18n';
+
+export interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  article?: boolean;
+  publishedTime?: string;
+  modifiedTime?: string;
+  tags?: string[];
+  author?: string;
+  canonical?: string;
+}
+
+const {
+  title,
+  description,
+  image,
+  article = false,
+  publishedTime,
+  modifiedTime,
+  tags = [],
+  author,
+  canonical
+} = Astro.props;
+
+const currentLang = getCurrentLanguage();
+---
+
+<!doctype html>
+<html lang={currentLang}>
+  <head>
+    <SEO 
+      title={title}
+      description={description}
+      image={image}
+      article={article}
+      publishedTime={publishedTime}
+      modifiedTime={modifiedTime}
+      tags={tags}
+      author={author}
+      canonical={canonical}
+    />
+    <meta name="generator" content={Astro.generator} />
+
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+
+    
+    <!-- Theme script to prevent flash -->
+    <script is:inline>
+      (function() {
+        const savedTheme = localStorage.getItem('theme');
+        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        const theme = savedTheme || systemTheme;
+        
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="font-sans antialiased">
+    <slot />
+    
+    <!-- Search Modal -->
+    <Search />
+    
+    <!-- Google Analytics -->
+    <GoogleAnalytics />
+    
+    <style>
+      @import '../styles/globals.css';
+    </style>
+  </body>
+</html>
