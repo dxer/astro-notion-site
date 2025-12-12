@@ -1,0 +1,94 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+// Debug environment variables
+const envVars = {
+  NOTION_TOKEN: import.meta.env.NOTION_TOKEN || process.env.NOTION_TOKEN,
+  NOTION_DATABASE_ID: import.meta.env.NOTION_DATABASE_ID || process.env.NOTION_DATABASE_ID,
+  SITE_URL: import.meta.env.SITE_URL || process.env.SITE_URL,
+  NODE_ENV: import.meta.env.NODE_ENV || process.env.NODE_ENV,
+  // Check if we're in production
+  isProduction: import.meta.env.PROD,
+  isDev: import.meta.env.DEV,
+};
+
+// Log to console for debugging
+console.log('Environment Variables Debug:', {
+  hasToken: !!envVars.NOTION_TOKEN,
+  tokenPrefix: envVars.NOTION_TOKEN ? envVars.NOTION_TOKEN.substring(0, 10) + '...' : 'null',
+  hasDatabaseId: !!envVars.NOTION_DATABASE_ID,
+  databaseIdPrefix: envVars.NOTION_DATABASE_ID ? envVars.NOTION_DATABASE_ID.substring(0, 8) + '...' : 'null',
+  siteUrl: envVars.SITE_URL,
+  nodeEnv: envVars.NODE_ENV,
+  isProduction: envVars.isProduction,
+  isDev: envVars.isDev,
+});
+---
+
+<Layout title="Environment Debug">
+  <main class="min-h-screen bg-background p-8">
+    <div class="max-w-4xl mx-auto">
+      <h1 class="text-3xl font-bold mb-6">Environment Variables Debug</h1>
+      
+      <div class="bg-card border border-border rounded-lg p-6 space-y-4">
+        <h2 class="text-xl font-semibold mb-4">Environment Status</h2>
+        
+        <div class="grid gap-4">
+          <div class="flex justify-between">
+            <span class="font-medium">NOTION_TOKEN:</span>
+            <span class={envVars.NOTION_TOKEN ? 'text-green-600' : 'text-red-600'}>
+              {envVars.NOTION_TOKEN ? 'Set' : 'Not Set'}
+            </span>
+          </div>
+          
+          <div class="flex justify-between">
+            <span class="font-medium">NOTION_DATABASE_ID:</span>
+            <span class={envVars.NOTION_DATABASE_ID ? 'text-green-600' : 'text-red-600'}>
+              {envVars.NOTION_DATABASE_ID ? 'Set' : 'Not Set'}
+            </span>
+          </div>
+          
+          <div class="flex justify-between">
+            <span class="font-medium">SITE_URL:</span>
+            <span class="text-blue-600">{envVars.SITE_URL || 'Not Set'}</span>
+          </div>
+          
+          <div class="flex justify-between">
+            <span class="font-medium">NODE_ENV:</span>
+            <span class="text-blue-600">{envVars.NODE_ENV || 'Not Set'}</span>
+          </div>
+          
+          <div class="flex justify-between">
+            <span class="font-medium">Is Production:</span>
+            <span class={envVars.isProduction ? 'text-green-600' : 'text-blue-600'}>
+              {envVars.isProduction ? 'Yes' : 'No'}
+            </span>
+          </div>
+          
+          <div class="flex justify-between">
+            <span class="font-medium">Is Development:</span>
+            <span class={envVars.isDev ? 'text-blue-600' : 'text-green-600'}>
+              {envVars.isDev ? 'Yes' : 'No'}
+            </span>
+          </div>
+        </div>
+        
+        <div class="mt-6 pt-4 border-t border-border">
+          <h3 class="text-lg font-semibold mb-2">Debug Info</h3>
+          <p class="text-sm text-foreground/70">
+            Token Prefix: {envVars.NOTION_TOKEN ? envVars.NOTION_TOKEN.substring(0, 10) + '...' : 'null'}
+          </p>
+          <p class="text-sm text-foreground/70">
+            Database ID Prefix: {envVars.NOTION_DATABASE_ID ? envVars.NOTION_DATABASE_ID.substring(0, 8) + '...' : 'null'}
+          </p>
+        </div>
+      </div>
+      
+      <div class="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <p class="text-sm text-yellow-800">
+          <strong>注意:</strong> 这个页面仅用于调试目的，包含敏感信息的前缀。请在生产环境中删除此页面。
+        </p>
+      </div>
+    </div>
+  </main>
+</Layout>

@@ -19,12 +19,22 @@ const NOTION_DATABASE_ID = import.meta.env.NOTION_DATABASE_ID || process.env.NOT
 
 // Validate required environment variables
 if (!NOTION_TOKEN) {
-  console.warn('WARNING: NOTION_TOKEN is not set. Please set this environment variable.');
+  console.error('ERROR: NOTION_TOKEN is not set. Please set this environment variable.');
+  throw new Error('NOTION_TOKEN is not set. Please set this environment variable.');
 }
 
 if (!NOTION_DATABASE_ID) {
-  console.warn('WARNING: NOTION_DATABASE_ID is not set. Please set this environment variable.');
+  console.error('ERROR: NOTION_DATABASE_ID is not set. Please set this environment variable.');
+  throw new Error('NOTION_DATABASE_ID is not set. Please set this environment variable.');
 }
+
+// Debug environment variables (remove in production)
+console.log('Environment check:', {
+  hasToken: !!NOTION_TOKEN,
+  tokenPrefix: NOTION_TOKEN ? NOTION_TOKEN.substring(0, 10) + '...' : 'null',
+  hasDatabaseId: !!NOTION_DATABASE_ID,
+  databaseIdPrefix: NOTION_DATABASE_ID ? NOTION_DATABASE_ID.substring(0, 8) + '...' : 'null'
+});
 
 const notion = new Client({
   auth: NOTION_TOKEN,
